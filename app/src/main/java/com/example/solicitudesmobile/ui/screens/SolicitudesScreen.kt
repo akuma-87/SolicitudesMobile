@@ -13,7 +13,9 @@ import com.example.solicitudesmobile.ui.theme.SolicitudesMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SolicitudesScreen() {
+fun SolicitudesScreen(
+    onNavegarAFormulario: () -> Unit = {}
+) {
     val listaSolicitudes = SolicitudRepository.obtenerSolicitudes()
 
     Scaffold(
@@ -21,6 +23,11 @@ fun SolicitudesScreen() {
             CenterAlignedTopAppBar(
                 title = { Text("Gestión de Solicitudes") }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavegarAFormulario) {
+                Text("+")
+            }
         }
     ) { innerPadding ->
         LazyColumn(

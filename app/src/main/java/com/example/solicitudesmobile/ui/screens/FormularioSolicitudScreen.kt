@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,12 +22,27 @@ import com.example.solicitudesmobile.ui.theme.SolicitudesMobileTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormularioSolicitudScreen(
-    solicitudViewModel: SolicitudViewModel = viewModel()
+    solicitudViewModel: SolicitudViewModel = viewModel(),
+    onVolverALista: () -> Unit = {},
+    onAbrirScanner: () -> Unit = {}
 ) {
     val uiState by solicitudViewModel.uiState.collectAsState()
 
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Nueva Solicitud") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Nueva Solicitud") },
+                navigationIcon = {
+                    IconButton(onClick = { onVolverALista() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver atrás"
+                        )
+                    }
+                }
+            )
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -124,6 +140,13 @@ fun FormularioSolicitudScreen(
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = { onAbrirScanner() }, // O la lambda de navegación correspondiente
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Escanear Código QR")
+            }
 
             // Botón Guardar con estado reactivo
             Button(

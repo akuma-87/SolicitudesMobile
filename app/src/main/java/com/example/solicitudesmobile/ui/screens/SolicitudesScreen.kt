@@ -1,22 +1,28 @@
 package com.example.solicitudesmobile.ui.screens
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.solicitudesmobile.data.Solicitud
-import com.example.solicitudesmobile.data.SolicitudRepository
+import com.example.solicitudesmobile.ui.SolicitudViewModel
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.solicitudesmobile.ui.theme.SolicitudesMobileTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SolicitudesScreen(
-    onNavegarAFormulario: () -> Unit = {}
+    onNavegarAFormulario: () -> Unit = {},
+    solicitudViewModel: SolicitudViewModel = viewModel() // 1. Inyectar el ViewModel
 ) {
-    val listaSolicitudes = SolicitudRepository.obtenerSolicitudes()
+    // 2. Observar el estado en vivo de las solicitudes
+    val uiState by solicitudViewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -37,7 +43,8 @@ fun SolicitudesScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(listaSolicitudes) { solicitud ->
+            // 3. Renderizar la lista actualizada desde uiState
+            items(uiState.solicitudes) { solicitud ->
                 ItemSolicitud(solicitud)
             }
         }

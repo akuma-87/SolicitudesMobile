@@ -28,7 +28,6 @@ fun FormularioSolicitudScreen(
 ) {
     val uiState by solicitudViewModel.uiState.collectAsState()
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,7 +51,7 @@ fun FormularioSolicitudScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Mensaje de éxito animado
+            // Mensaje de éxito de guardado
             AnimatedVisibility(
                 visible = uiState.mensajeExito != null,
                 enter = fadeIn(),
@@ -66,6 +65,26 @@ fun FormularioSolicitudScreen(
                         Text(
                             text = mensaje,
                             color = Color(0xFF155724),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+
+            // Mensaje de confirmación del QR captado
+            AnimatedVisibility(
+                visible = uiState.mensajeQR != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                uiState.mensajeQR?.let { mensaje ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFD1ECF1)),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                    ) {
+                        Text(
+                            text = mensaje,
+                            color = Color(0xFF0C5460),
                             modifier = Modifier.padding(16.dp)
                         )
                     }
@@ -142,15 +161,18 @@ fun FormularioSolicitudScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { onAbrirScanner() }, // O la lambda de navegación correspondiente
+                onClick = { onAbrirScanner() },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Escanear Código QR")
             }
 
-            // Botón Guardar con estado reactivo
+            // Botón Guardar con estado reactivo y regreso automático
             Button(
-                onClick = { solicitudViewModel.guardarSolicitud() },
+                onClick = {
+                    solicitudViewModel.guardarSolicitud()
+                    onVolverALista()
+                },
                 enabled = uiState.esValido,
                 modifier = Modifier.fillMaxWidth()
             ) {

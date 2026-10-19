@@ -1,13 +1,16 @@
 package com.example.solicitudesmobile.ui
 
 import androidx.lifecycle.ViewModel
+import com.example.solicitudesmobile.data.Solicitud
+import com.example.solicitudesmobile.data.SolicitudRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// Estado visual de la pantalla de formulario
+// Estado agrupado con la lista de solicitudes y los campos del formulario
 data class FormularioUiState(
+    val solicitudes: List<Solicitud> = emptyList(),
     val titulo: String = "",
     val tituloError: String? = null,
     val descripcion: String = "",
@@ -18,12 +21,15 @@ data class FormularioUiState(
     val ubicacion: String = "",
     val ubicacionError: String? = null,
     val esValido: Boolean = false,
-    val mensajeExito: String? = null
+    val mensajeExito: String? = null,
+    val mensajeQR: String? = null // <-- NUEVO: Aviso de lectura de QR
 )
 
 class SolicitudViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(FormularioUiState())
+    private val _uiState = MutableStateFlow(
+        FormularioUiState(solicitudes = SolicitudRepository.obtenerSolicitudes())
+    )
     val uiState: StateFlow<FormularioUiState> = _uiState.asStateFlow()
 
     fun onTituloChanged(nuevoTitulo: String) {
@@ -62,6 +68,17 @@ class SolicitudViewModel : ViewModel() {
         validarFormulario()
     }
 
+    // Registra el código capturado y asigna el mensaje de confirmación
+    fun registrarQRCaptado(codigo: String) {
+        _uiState.update { state ->
+            state.copy(
+                mensajeQR = "¡Código QR captado con éxito! ($codigo)",
+                ubicacion = codigo // Completa la ubicación con el dato del QR
+            )
+        }
+        validarFormulario()
+    }
+
     private fun validarFormulario() {
         val s = _uiState.value
         val esValido = s.titulo.isNotBlank() &&
@@ -77,12 +94,33 @@ class SolicitudViewModel : ViewModel() {
     }
 
     fun guardarSolicitud() {
-        if (_uiState.value.esValido) {
-            _uiState.update { it.copy(mensajeExito = "¡Solicitud guardada con éxito!") }
+        val estadoActual = _uiState.value
+        if (estadoActual.esValido) {
+            val nuevaSolicitud = Solicitud(
+                id = System.currentTimeMillis().toString(),
+                titulo = estadoActual.titulo,
+                descripcion = estadoActual.descripcion,
+                categoria = estadoActual.categoria,
+                fecha = "18/10/2026"
+            )
+
+            _uiState.update { state ->
+                state.copy(
+                    solicitudes = state.solicitudes + nuevaSolicitud,
+                    titulo = "",
+                    descripcion = "",
+                    categoria = "",
+                    prioridad = "Media",
+                    ubicacion = "",
+                    esValido = false,
+                    mensajeExito = "¡Solicitud guardada con éxito!",
+                    mensajeQR = null
+                )
+            }
         }
     }
 
     fun limpiarMensaje() {
-        _uiState.update { it.copy(mensajeExito = null) }
+        _uiState.update { it.copy(mensajeExito = null, mensajeQR = null) }
     }
 }
